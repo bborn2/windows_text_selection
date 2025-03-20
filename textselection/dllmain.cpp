@@ -4,6 +4,11 @@
 #include <string>
 #include <iostream>
 
+#include <oleacc.h>
+#include <UIAutomation.h>
+
+#include "selection.h"
+using namespace selection;
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
@@ -24,14 +29,39 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 extern "C" __declspec(dllexport) void getSelectionText(void* buffer)
 {
-    static std::string text = "Hello from DLL!";
+    //static std::string text = "Hello from DLL!";
+
+
+    static std::string text = "";
+
+    try {
+        selection_impl::Selection result = selection_impl::GetSelection();
+
+        if (result.process.has_value() && result.process->name.has_value()) {
+            text = result.process->name.value() + " :";
+        }
+        else {
+            text = "- : ";
+        }
+
+        text += result.text;
+    }
+    catch (const RuntimeException& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Standard Exception: " << e.what() << std::endl;
+    }
+    catch (...) {
+        std::cerr << "Unknown Exception occurred." << std::endl;
+    }
     
     size_t maxSize = 1024 - 1; // 留一个字节给 '\0'
      
     errno_t err = strncpy_s(static_cast<char*>(buffer), maxSize, text.c_str(), maxSize - 1);
     static_cast<char*>(buffer)[text.length()] = '\0';
 
-    // 检查 strncpy_s 是否成功88
+    // 检查 strncpy_s 是否成功
     if (err != 0)
     {
         std::cerr << "Error copying string to buffer!" << std::endl;
@@ -55,4 +85,5 @@ extern "C" __declspec(dllexport) void* allocate_buffer(size_t size)
 extern "C" __declspec(dllexport) void free_buffer(void* buffer)
 {
     free(buffer);  // 释放内存
-}
+} 
+

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
+
 namespace WinFormsApp1
 {
     public partial class Form1 : Form
@@ -33,6 +34,18 @@ namespace WinFormsApp1
         [DllImport("C:\\Users\\songkun2\\source\\repos\\WinFormsApp1\\x64\\Debug\\textselection.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void free_buffer(IntPtr buffer);
 
+        // 导入 Rust DLL 函数
+        [DllImport("C:\\Users\\songkun2\\source\\repos\\WinFormsApp1\\rust_text_selection\\target\\debug\\rust_text_selection.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr get_text();
+
+        [DllImport("C:\\Users\\songkun2\\source\\repos\\WinFormsApp1\\WinFormsApp1\\bin\\Debug\\net8.0-windows\\ScreenTranslation.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void st_Initialize();
+
+        [DllImport("C:\\Users\\songkun2\\source\\repos\\WinFormsApp1\\WinFormsApp1\\bin\\Debug\\net8.0-windows\\ScreenTranslation.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr st_GetSelectionString(IntPtr hwnd);
+
+   
+
 
         IntPtr _buffer = IntPtr.Zero;
 
@@ -44,6 +57,12 @@ namespace WinFormsApp1
 
             // 分配内存
             _buffer = allocate_buffer(1024);
+
+
+            //string result = Marshal.PtrToStringAnsi( get_text());
+            //label2.Text = result;
+
+            st_Initialize();
 
         }
 
@@ -71,13 +90,15 @@ namespace WinFormsApp1
                         break;
                     case MouseMessages.WM_LBUTTONUP:
 
+                        //string result = Marshal.PtrToStringAnsi(get_text());
 
+                        string result = Marshal.PtrToStringAnsi(st_GetSelectionString(IntPtr.Zero));
 
                         // 填充数据
-                        getSelectionText(_instance._buffer);
+                        //getSelectionText(_instance._buffer);
 
                         // 读取内存内容
-                        string result = Marshal.PtrToStringAnsi(_instance._buffer);
+                        //string result = Marshal.PtrToStringAnsi(_instance._buffer);
                         Console.WriteLine("Buffer content: " + result);
 
                         _instance.label2.Text = result;

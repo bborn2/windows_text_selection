@@ -3,3 +3,5 @@ WinFormsApp1/bin/
 WinFormsApp1/obj/
 textselection/x64
 x64
+rust_text_selection/target
+rust_text_selection/Cargo.lock
