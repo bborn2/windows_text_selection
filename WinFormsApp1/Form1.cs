@@ -92,13 +92,13 @@ namespace WinFormsApp1
 
                         //string result = Marshal.PtrToStringAnsi(get_text());
 
-                        string result = Marshal.PtrToStringAnsi(st_GetSelectionString(IntPtr.Zero));
+                        string result = Marshal.PtrToStringUTF8(st_GetSelectionString(IntPtr.Zero));
 
                         // 填充数据
                         //getSelectionText(_instance._buffer);
 
                         // 读取内存内容
-                        //string result = Marshal.PtrToStringAnsi(_instance._buffer);
+                        //string result = Marshal.PtrToStringUTF8(_instance._buffer);
                         Console.WriteLine("Buffer content: " + result);
 
                         _instance.label2.Text = result;
