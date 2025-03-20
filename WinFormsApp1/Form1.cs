@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -10,7 +11,7 @@ namespace WinFormsApp1
         private static IntPtr _hookID = IntPtr.Zero;
 
         private static Form1 _instance; // 存储窗体实例
-         
+
 
         // 鼠标钩子委托
         private static LowLevelMouseProc _proc = HookCallback;
@@ -22,11 +23,28 @@ namespace WinFormsApp1
             InitializeComponent();
         }
 
+        [DllImport("C:\\Users\\songkun2\\source\\repos\\WinFormsApp1\\x64\\Debug\\textselection.dll", CallingConvention = CallingConvention.Cdecl)]
+
+        public static extern IntPtr allocate_buffer(int size);
+
+        [DllImport("C:\\Users\\songkun2\\source\\repos\\WinFormsApp1\\x64\\Debug\\textselection.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void getSelectionText(IntPtr buffer);
+
+        [DllImport("C:\\Users\\songkun2\\source\\repos\\WinFormsApp1\\x64\\Debug\\textselection.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void free_buffer(IntPtr buffer);
+
+
+        IntPtr _buffer = IntPtr.Zero;
+
         private void button1_Click(object sender, EventArgs e)
         {
             this.TopMost = true;
             // 安装全局鼠标钩子
             _hookID = SetHook(_proc);
+
+            // 分配内存
+            _buffer = allocate_buffer(1024);
+
         }
 
         private static IntPtr SetHook(LowLevelMouseProc proc)
@@ -51,11 +69,25 @@ namespace WinFormsApp1
                         Console.WriteLine("鼠标左键按下");
 
                         break;
+                    case MouseMessages.WM_LBUTTONUP:
+
+
+
+                        // 填充数据
+                        getSelectionText(_instance._buffer);
+
+                        // 读取内存内容
+                        string result = Marshal.PtrToStringAnsi(_instance._buffer);
+                        Console.WriteLine("Buffer content: " + result);
+
+                        _instance.label2.Text = result;
+
+                        break;
                     case MouseMessages.WM_RBUTTONDOWN:
                         Console.WriteLine("鼠标右键按下");
                         break;
                     case MouseMessages.WM_MOUSEMOVE:
-                        Console.WriteLine("鼠标移动");
+                        //Console.WriteLine("鼠标移动");
 
 
                         MSLLHOOKSTRUCT hookStruct = Marshal.PtrToStructure<MSLLHOOKSTRUCT>(lParam);
@@ -83,6 +115,7 @@ namespace WinFormsApp1
         private enum MouseMessages
         {
             WM_LBUTTONDOWN = 0x0201,
+            WM_LBUTTONUP = 0x0202,
             WM_RBUTTONDOWN = 0x0204,
             WM_MOUSEMOVE = 0x0200
         }
@@ -121,9 +154,21 @@ namespace WinFormsApp1
             this.TopMost = false;
 
             UnhookWindowsHookEx(_hookID);
+
+            if (_buffer != IntPtr.Zero)
+            {
+
+                free_buffer(_buffer);
+                _buffer = IntPtr.Zero;
+            }
         }
 
         private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
         {
 
         }
